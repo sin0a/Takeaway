@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "sdkVersion": "25.0.0",
+    "icon": "./resources/icon/fjoset.png"
+  ,
+  "android": {
+     "package": "com.sindre.Testproject"
+   	},
+   	"ios": {
+      "bundleIdentifier": "com.sindre.Testproject"
+    }
+  }
+}
