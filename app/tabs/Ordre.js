@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, Alert, AsyncStorage,TouchableOpacity, ActivityIndicator, Image, FlatList, StyleSheet, Text, View,} from 'react-native';
+import { AppRegistry, Alert, AsyncStorage,TouchableOpacity, ActivityIndicator, Image, SectionList, FlatList, ListView, StyleSheet, Text, View, TextInput } from 'react-native';
 import { List, ListItem } from 'react-native-elements';
 import { TabNavigator, TabBarBottom } from 'react-navigation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -9,18 +9,17 @@ import styles from '../style/Styles.js';
 import GLOBALS from '../config/Config';
 import Toast, {DURATION} from 'react-native-easy-toast';
 
-export default class Drikke extends React.Component {
-
+export default class Ordre extends React.Component {
 	constructor(props){
 		super(props);
+		state = {
+      fontLoaded: false,
+    };
 		this.state ={
 			data: [],
-			datas: [],
 			isLoading: true,
-			fontLoaded: true,
-			count: 0,
 			hasErrored: false,
-		}
+			count: 0,}
 	}
 	// TODO: Sjekk om alle metoder kan bli lagret i egen klasse
 	// Viktig
@@ -48,17 +47,6 @@ export default class Drikke extends React.Component {
     }
 		this.setState({count});
 	}
-	fetchData(url) {
-		this.setState({ isLoading: true });
-		fetch(url)
-				.then((response) => {
-						this.setState({ isLoading: false });
-						return response;
-				})
-				.then((response) => response.json())
-				.then((data) => this.setState({ state }))
-				.catch(() => this.setState({ hasErrored: true }));
-	}
 	_prompt({item, index}){
 		let { data } = this.state;
 		let targetPost = data[index];
@@ -72,15 +60,25 @@ export default class Drikke extends React.Component {
 			{ cancelable: false }
 		)
 	}
+	fetchData(url) {
+			this.setState({ isLoading: true });
+			fetch(url)
+					.then((response) => {
+							this.setState({ isLoading: false });
+							return response;
+					})
+					.then((response) => response.json())
+					.then((data) => this.setState({ data }))
+					.catch(() => this.setState({ hasErrored: true }));
+	}
 	async componentDidMount(){
 		await Font.loadAsync({
 	      'Montserrat-Regular': global.FONT_MR,
 	      'Montserrat-Medium':  global.FONT_MM,
 	    });
-			this.fetchData(global.BASE_URL + '/drikke_api.php');
-			this.fetchData(global.BASE_URL + '/dressing_api.php');
-
+		this.fetchData(global.BASE_URL + '/dressing_api.php');
 	}
+
 	render(){
 		if(this.state.isLoading){
 			return(
@@ -89,19 +87,19 @@ export default class Drikke extends React.Component {
 				</View>
 			)
 		} if(this.state.hasErrored){
-				return(
-					<View style={styles.activityIndicator}>
-						<Text>{global.ERR_BASIC}</Text>
-					</View>
-				)
+			return(
+				<View style={styles.activityIndicator}>
+					<Text>{global.ERR_BASIC}</Text>
+				</View>
+			)
 		}
 		return(
 			<View style={styles.container}>
 				<Toast
-					ref="toast"
-					style={{backgroundColor:'gray'}}
-					textStyle={{color:'black'}}
-				/>
+	        ref="toast"
+	        style={{backgroundColor:'gray'}}
+	        textStyle={{color:'black'}}
+	      />
 				<FlatList
 					data={this.state.data}
 					renderItem={({item, index}) =>
@@ -109,7 +107,7 @@ export default class Drikke extends React.Component {
 							<View style={styles.imageWrapper}>
 								<Image
 									style={{ width: 80, height: 80}}
-									source={{ uri: item.bilde}}
+									source={{uri: item.bilde}}
 								/>
 							</View>
 							<View style={{ flex: 1, width: '46%'}}>
@@ -125,11 +123,11 @@ export default class Drikke extends React.Component {
 		            {item.pris}kr
 		            </Text>
 		            {item.utsolgt =="1" &&
-		              <Icon
-		                name='cart-plus'
-		                size={28}
-		                color='gray'
-		                style={{height:25,width:25,borderRadius:15}}/>
+				              <Icon
+				                name='cart-plus'
+				                size={28}
+				                color='gray'
+				                style={{height:25,width:25,borderRadius:15}}/>
 		            }
 		            {item.utsolgt =="0" &&
 		              <TouchableOpacity onPress={()=>this._prompt({ item, index})}>
@@ -141,9 +139,8 @@ export default class Drikke extends React.Component {
 		              </TouchableOpacity>
 		            }
 		          </View>
-					</View>}
-					keyExtractor={(item, index) => index}
-				/>
+						</View>}
+				keyExtractor={(item, index) => index}/>
 			</View>
 		);
 	}

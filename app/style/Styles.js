@@ -19,6 +19,9 @@ export default React.StyleSheet.create({
     borderBottomColor: '#d6d7da',
     padding: 5,
   },
+	tabs: {
+		flexDirection: 'row',
+  },
   imageWrapper: {
     justifyContent: 'center',
     alignItems: 'center',

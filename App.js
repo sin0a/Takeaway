@@ -18,12 +18,12 @@ class Deals extends React.Component {
 
   constructor(){
     super();
-    global.BASE_URL   = 'http://ec2-35-178-132-219.eu-west-2.compute.amazonaws.com';
-    global.IMAGE_DRIKKE = require('C:/Users/Sindre/TestProject/app/pictures/soda-bottle.png');
+    global.BASE_URL     = 'http://192.168.10.128';
+    global.IMAGE_DRIKKE = require('C:/Users/Sindre/Takeaway/app/pictures/soda-bottle.png');
     global.IMAGE_BURGER = require('./app/pictures/burgertirsdag.png');
-    global.ERR_BASIC  = 'Det skjedde en feil, vennligst prøv igjen senere';
-    global.FONT_MM    = require('C:/Users/Sindre/TestProject/resources/fonts/Montserrat-Medium.ttf');
-    global.FONT_MR    = require('C:/Users/Sindre/TestProject/resources/fonts/Montserrat-Regular.ttf');
+    global.ERR_BASIC    = 'Det skjedde en feil, vennligst prøv igjen senere';
+    global.FONT_MM      = require('C:/Users/Sindre/Takeaway/resources/fonts/Montserrat-Medium.ttf');
+    global.FONT_MR      = require('C:/Users/Sindre/Takeaway/resources/fonts/Montserrat-Regular.ttf');
   }
 
   async componentDidMount(){
@@ -91,7 +91,6 @@ export default TabNavigator(
           //return <Icon name{}
           return <Icon name={iconName} size={25} color={tintColor}/>;
         }
-
         // You can return any component that you like here! We usually use an
         // icon component from react-native-vector-icons
         return <Icon name={iconName} size={25} color={tintColor} />;
