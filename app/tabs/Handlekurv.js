@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
-import { AppRegistry, AsyncStorage, RefreshControl, TouchableOpacity,ActivityIndicator, Image,FlatList, StyleSheet, Text, View } from 'react-native';
+import { AppRegistry, AsyncStorage, RefreshControl, TouchableOpacity, ActivityIndicator, Image,FlatList, StyleSheet, Text, View } from 'react-native';
 import { List, ListItem, Button } from 'react-native-elements';
 import { TabNavigator, TabBarBottom } from 'react-navigation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import styles from '../style/Styles.js';
 import { Expo, Font } from 'expo';
-import GLOBALS from '../config/Config';
-import Ordre from './Ordre';
-
 
 export default class Handlekurv extends React.Component {
 
@@ -27,9 +24,9 @@ export default class Handlekurv extends React.Component {
 			isFetching: true,
 			isLoading: true}
 	}
-	componentWillReceiveProps() {
-    this.checkForUpdate();
-  }
+	componentWillReceiveProps(){
+		this.refresh();
+	}
 	// Sammenligner dataTabell mot AsyncTabell
 	async checkForUpdate(){
 		let keys = await AsyncStorage.getAllKeys();
@@ -135,15 +132,25 @@ export default class Handlekurv extends React.Component {
 			this.setState({dataUpdated: !dataUpdated});
 		}
 	}
+	/*loadVarer(){
+		let { cart } = this.state;
+		const { item } = this.props.navigation.state.params;
+		var data =[{id: item.id, size: item.size,
+			navn: item.navn, type: 'pizza', antall: '1', bilde: item.bilde,
+			pris: item.pris, key: key}];
+			cart.push(cart);
+			var merged = [].concat.apply([], cart);
+			this.setState({ cart: merged });
+	}*/
 	async componentDidMount(){
-		// Hent all data
+		// fetch data from db
 		this.getKurv();
-		// Last inn Fonts
+		// Load fonts
 		await Font.loadAsync({
-	      'Montserrat-Regular': global.FONT_MR,
-	      'Montserrat-Medium':  global.FONT_MM,
-	    });
-		// Oppdater state
+      'Montserrat-Regular': global.FONT_MR,
+    	'Montserrat-Medium':  global.FONT_MM,
+	  });
+		// update state
 		this.setState({
 			fontLoaded: true,
 		 	isLoading: false,});
@@ -253,7 +260,6 @@ export default class Handlekurv extends React.Component {
 	                backgroundColor: '#7f1a1a',
 	                height: 50,
 									borderRadius: 4,
-
 	              }}/>
 	          </View>
 				</View>
@@ -268,7 +274,7 @@ export default class Handlekurv extends React.Component {
 								onPress={() => this.setState({ handlekurv: true})}
 								titleStyle={{fontFamily: 'Montserrat-Medium', fontWeight: '400', color:'black'}}
 								buttonStyle={{
-									height: 30,
+									height: 50,
 									backgroundColor: 'white',
 								}}/>
 							</View>
@@ -278,11 +284,25 @@ export default class Handlekurv extends React.Component {
 									onPress={() => this.setState({ handlekurv: false})}
 		              titleStyle={{color:'black', fontFamily: 'Montserrat-Medium', fontWeight: '400'}}
 		              buttonStyle={{
-		                height: 30,
+		                height: 50,
 										backgroundColor: 'white',
 		              }}/>
 		        </View>
 					</View>
+					<FlatList
+						refreshControl={
+							<RefreshControl
+								refreshing={this.state.isLoading}
+								onRefresh={this.checkForUpdate.bind(this)}/>
+						}
+						data={this.state.cart}
+						extradata={this.state.dataUpdated}
+						renderItem={({item, index}) =>
+							<View style={styles.listItem}>
+							</View>
+						}
+						keyExtractor={(item, index) => index}
+					/>
 				</View>
 			);
 		}

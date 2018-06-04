@@ -1,30 +1,16 @@
-import React, { Component } from 'react';
-import Alert from 'react-native';
-
-export default class Action extends React.component{
-
-  constructor(){
-		super();
-		state = {
-      fontLoaded: false,
-    };
-		this.state ={ data: [], isLoading: true}
+export function fetchData(url,table) {
+	var formData = new FormData();
+	formData.append('table', table);
+	let postData = {
+    method: 'POST',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data'
+    },
+    body: formData
 	}
-  componentDidMount(){
-  }
-  render(){
-
-  }
-  _prompt({item, index}){
-  	Alert.alert(
-  		'Legg til vare',
-  		item.navn ,
-  		[
-  			{text: 'Avbryt', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-  			{text: 'Legg til', onPress: () => _addToCart({item})},
-  		],
-  		{ cancelable: false }
-  	)
-  }
-
+	return fetch(url,postData);
+}
+export function hello(){
+  return 'hello';
 }

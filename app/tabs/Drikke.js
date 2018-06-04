@@ -7,7 +7,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { Expo, Font } from 'expo';
 import styles from '../style/Styles.js';
 import GLOBALS from '../config/Config';
+import FormData from 'form-data';
 import Toast, {DURATION} from 'react-native-easy-toast';
+import {fetchData} from '../actions/Action';
 
 export default class Drikke extends React.Component {
 
@@ -15,7 +17,6 @@ export default class Drikke extends React.Component {
 		super(props);
 		this.state ={
 			data: [],
-			datas: [],
 			isLoading: true,
 			fontLoaded: true,
 			count: 0,
@@ -24,7 +25,7 @@ export default class Drikke extends React.Component {
 	}
 	// TODO: Sjekk om alle metoder kan bli lagret i egen klasse
 	// Viktig
-	async _addToCart({ targetPost }) {
+	async _addToCart({ item }) {
 		let { count} = this.state;
 		// Henter alt som er i handlevognen
 		let keys = await AsyncStorage.getAllKeys();
@@ -35,51 +36,33 @@ export default class Drikke extends React.Component {
 		count = count + 1;
 		key = JSON.stringify(count);
 		// Data som skal sendes
-		var data =[{id: targetPost.id, size: targetPost.size,
-			navn: targetPost.navn, type: 'pizza', antall: '1', bilde: targetPost.bilde,
-			pris: targetPost.pris, key: key}];
+		var data =[{id: item.id, size: item.size,
+			navn: item.navn, type: 'pizza', antall: '1', bilde: item.bilde,
+			pris: item.pris, key: key}];
 		data = JSON.stringify(data);
 		try {
 			await AsyncStorage.setItem(key, data);
 		} catch (error) {
 			this.setState({ hasErrored: true});
 		} finally {
-      this.refs.toast.show('Lagt til i handlekurv');
+      this.refs.toast.show(item.navn+' til i handlekurv');
     }
 		this.setState({count});
 	}
-	fetchData(url) {
-		this.setState({ isLoading: true });
-		fetch(url)
-				.then((response) => {
-						this.setState({ isLoading: false });
-						return response;
-				})
-				.then((response) => response.json())
-				.then((data) => this.setState({ state }))
-				.catch(() => this.setState({ hasErrored: true }));
-	}
-	_prompt({item, index}){
-		let { data } = this.state;
-		let targetPost = data[index];
-		Alert.alert(
-			'Legg til vare',
-			targetPost.navn ,
-			[
-				{text: 'Avbryt', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-				{text: 'Legg til', onPress: () => this._addToCart({targetPost})},
-			],
-			{ cancelable: false }
-		)
-	}
+	onLearnMore = (item) => {
+    this.props.navigation.navigate('Handlekurv', { ...item });
+  };
 	async componentDidMount(){
+		// load custom fonts
 		await Font.loadAsync({
-	      'Montserrat-Regular': global.FONT_MR,
-	      'Montserrat-Medium':  global.FONT_MM,
-	    });
-			this.fetchData(global.BASE_URL + '/drikke_api.php');
-			this.fetchData(global.BASE_URL + '/dressing_api.php');
-
+			'Montserrat-Regular': global.FONT_MR,
+			'Montserrat-Medium':  global.FONT_MM,
+		});
+			fetchData(global.ITEM_API,'drikke')
+			.then((response) => response.json())
+			.then((data) => this.setState({ data }))
+			.catch(() => this.setState({ hasErrored: true }));
+			this.setState({isLoading: false});
 	}
 	render(){
 		if(this.state.isLoading){
@@ -99,7 +82,7 @@ export default class Drikke extends React.Component {
 			<View style={styles.container}>
 				<Toast
 					ref="toast"
-					style={{backgroundColor:'gray'}}
+					style={{backgroundColor:'white'}}
 					textStyle={{color:'black'}}
 				/>
 				<FlatList
@@ -132,7 +115,7 @@ export default class Drikke extends React.Component {
 		                style={{height:25,width:25,borderRadius:15}}/>
 		            }
 		            {item.utsolgt =="0" &&
-		              <TouchableOpacity onPress={()=>this._prompt({ item, index})}>
+		              <TouchableOpacity onPress={()=>this.onLearnMore({ item })}>
 		                <Icon
 		                  name='cart-plus'
 		                  size={28}

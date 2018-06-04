@@ -56,7 +56,7 @@ export default class Pizza extends React.Component {
     //this.setState({ refresh: !refresh});
     this.setState({ selected: !selected});
   }
-  async _addToCart({ targetPost }) {
+  async _addToCart({ item }) {
     this.setState({isFetching:true});
     let { count} = this.state;
     // Henter alt som er i handlevognen
@@ -68,37 +68,26 @@ export default class Pizza extends React.Component {
     count = count + 1;
     key = JSON.stringify(count);
     // Data som skal sendes
-    var data =[{id: targetPost.id, size: targetPost.size,
-      navn: targetPost.navn, type: 'pizza', antall: '1', bilde: targetPost.bilde,
-      pris: targetPost.pris, key: key}];
+    var data =[{id: item.id, size: item.size,
+      navn: item.navn, type: 'pizza', antall: '1', bilde: item.bilde,
+      pris: item.pris, key: key}];
     data = JSON.stringify(data);
     try {
       await AsyncStorage.setItem(key, data);
     } catch (error) {
       this.serState({hasErrored: true});
     } finally {
-      this.refs.toast.show('Lagt til i handlekurv');
+      this.refs.toast.show(item.navn+' til i handlekurv');
     }
     this.setState({count});
   }
-  _prompt({item, index}){
-    let { dataSource } = this.state;
-    let targetPost = dataSource[index];
-    Alert.alert(
-      'Legg til vare',
-      targetPost.navn + ' ' + targetPost.size + ' ' ,
-      [
-        {text: 'Avbryt', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-        {text: 'Legg til', onPress: () => this._addToCart({targetPost})},
-      ],
-      { cancelable: false }
-    )
-  }
   async componentDidMount(){
+    // Load custom fonts
     await Font.loadAsync({
-	      'Montserrat-Regular': GLOBALS.FONT_MR,
-	      'Montserrat-Medium':  GLOBALS.FONT_MM,
-	    });
+      'Montserrat-Regular': global.FONT_MR,
+      'Montserrat-Medium':  global.FONT_MM,
+	  });
+    // fetch data from DB
     var array = [];
     var utsolgt = [];
     this.setState({ fontLoaded: true });
@@ -143,7 +132,7 @@ export default class Pizza extends React.Component {
       <View style={styles.container}>
       <Toast
         ref="toast"
-        style={{backgroundColor:'gray'}}
+        style={{backgroundColor:'white'}}
         textStyle={{color:'black'}}
       />
         <FlatList
@@ -194,7 +183,7 @@ export default class Pizza extends React.Component {
                 style={{height:25,width:25,borderRadius:15}}/>
             }
             {item.utsolgt =="0" &&
-              <TouchableOpacity onPress={()=>this._prompt({ item, index})}>
+              <TouchableOpacity onPress={()=>this._addToCart({ item })}>
                 <Icon
                   name='cart-plus'
                   size={28}

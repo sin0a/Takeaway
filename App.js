@@ -18,21 +18,22 @@ class Deals extends React.Component {
 
   constructor(){
     super();
+    this.state = { refresh: false, };
     global.BASE_URL     = 'http://192.168.10.128';
+    global.ITEM_API     = 'http://192.168.10.128/item_api.php';
     global.IMAGE_DRIKKE = require('C:/Users/Sindre/Takeaway/app/pictures/soda-bottle.png');
     global.IMAGE_BURGER = require('./app/pictures/burgertirsdag.png');
     global.ERR_BASIC    = 'Det skjedde en feil, vennligst prøv igjen senere';
     global.FONT_MM      = require('C:/Users/Sindre/Takeaway/resources/fonts/Montserrat-Medium.ttf');
     global.FONT_MR      = require('C:/Users/Sindre/Takeaway/resources/fonts/Montserrat-Regular.ttf');
   }
-
   async componentDidMount(){
-  await Font.loadAsync({
+    // load custom fonts
+    await Font.loadAsync({
       'Montserrat-Regular': global.FONT_MR,
       'Montserrat-Medium':  global.FONT_MM,
-    });
+	  });
   }
-
   render() {
     return (
       <View style={styles.container}>
@@ -69,31 +70,26 @@ export default TabNavigator(
         let iconName;
         if (routeName === 'Deals') {
           iconName = `star${focused ? '' : '-outline'}`;
+          return <Icon name={iconName} size={25} color={tintColor} />;
         } else if (routeName == 'Pizza') {
         	iconName = 'pizza';
+          return <Icon name={iconName} size={25} color={tintColor} />;
         } else if (routeName == 'Dressing') {
           iconName = 'bowl';
-          //return <Icon name{}
           return <Icon name={iconName} size={25} color={tintColor} />;
         }
         else if (routeName == 'Handlekurv') {
         	iconName = `cart${focused ? '' : '-outline'}`;
-          return <Icon name={iconName} size={25} color={tintColor} onPress={() => navigation.navigate("Handlekurv", { dataUpdated: true })}/>;
+          return <Icon name={iconName} size={25} color={tintColor} onPress={() => navigation.navigate("Handlekurv", {date: new Date()})}/>;
         }
         else if (routeName == 'Drikke') {
-        	//iconName = `cup${focused ? '' : '-outline'}`;
           iconName = 'beer';
-          //return <Icon name{}
-          return <Icon name={iconName} size={25} color={tintColor}/>;
+          return <Icon name={iconName} size={25} color={tintColor} />;
         }
         else if (routeName == 'Snacks') {
           iconName = 'hamburger';
-          //return <Icon name{}
-          return <Icon name={iconName} size={25} color={tintColor}/>;
+          return <Icon name={iconName} size={25} color={tintColor} />;
         }
-        // You can return any component that you like here! We usually use an
-        // icon component from react-native-vector-icons
-        return <Icon name={iconName} size={25} color={tintColor} />;
       },
     }),
     tabBarOptions: {
