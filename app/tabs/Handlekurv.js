@@ -21,10 +21,10 @@ export default class Handlekurv extends React.Component {
 			handlekurv: true,
 			selected: false,
 			dataUpdated: false,
-			isFetching: true,
 			isLoading: true}
 	}
-	componentWillReceiveProps(){
+	async componentWillReceiveProps(props){
+		this.setState({dataUpdated: props})
 		this.refresh();
 	}
 	// Sammenligner dataTabell mot AsyncTabell
@@ -55,7 +55,7 @@ export default class Handlekurv extends React.Component {
 		}
 		this.refresh();
 	}
-	// Henter data fra AsyncStorage
+	// Henter data fra AsyncStorage*/
 	async getKurv(){
 		let keys = await AsyncStorage.getAllKeys();
 		let { total } = this.state;
@@ -64,14 +64,19 @@ export default class Handlekurv extends React.Component {
 		let string;
 		let json;
 		// Hent all data fra handlekurv
-		for(let key of keys){
-			string = await AsyncStorage.getItem(key);
-			json = JSON.parse(string);
-			cart.push(json);
+		try {
+			for(let key of keys){
+				string = await AsyncStorage.getItem(key);
+				json = JSON.parse(string);
+				cart.push(json);
+			}
+			var merged = [].concat.apply([], cart);
+		}catch(error) {
+			console.error(error);
+		}finally{
+				this.setState({ cart: merged });
+				this.regnTotal();
 		}
-		var merged = [].concat.apply([], cart);
-		this.setState({ cart: merged });
-		this.regnTotal();
 	}
 	// Oppdater dataTabell, re-rendrer View
 	refresh(){
@@ -114,7 +119,6 @@ export default class Handlekurv extends React.Component {
 		this.setState({ cart });
 		this.setState({dataUpdated: !dataUpdated});
 		this.regnTotal();
-
 	}
 	// Button antall -: senker antall av en vare
 	antallMinus({item, index}){
@@ -132,19 +136,22 @@ export default class Handlekurv extends React.Component {
 			this.setState({dataUpdated: !dataUpdated});
 		}
 	}
-	/*loadVarer(){
-		let { cart } = this.state;
+	loadVarer(){
+		//let { cart } = this.state;
 		const { item } = this.props.navigation.state.params;
-		var data =[{id: item.id, size: item.size,
+		console.log(item.navn);
+		/*var data =[{id: item.id, size: item.size,
 			navn: item.navn, type: 'pizza', antall: '1', bilde: item.bilde,
 			pris: item.pris, key: key}];
 			cart.push(cart);
 			var merged = [].concat.apply([], cart);
-			this.setState({ cart: merged });
-	}*/
+			this.setState({ cart: merged });*/
+	}
 	async componentDidMount(){
 		// fetch data from db
 		this.getKurv();
+		//console.log(this.props.navigation.sta);
+		//this.loadVarer();
 		// Load fonts
 		await Font.loadAsync({
       'Montserrat-Regular': global.FONT_MR,

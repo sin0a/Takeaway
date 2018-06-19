@@ -49,9 +49,6 @@ export default class Drikke extends React.Component {
     }
 		this.setState({count});
 	}
-	onLearnMore = (item) => {
-    this.props.navigation.navigate('Handlekurv', { ...item });
-  };
 	async componentDidMount(){
 		// load custom fonts
 		await Font.loadAsync({
@@ -115,7 +112,7 @@ export default class Drikke extends React.Component {
 		                style={{height:25,width:25,borderRadius:15}}/>
 		            }
 		            {item.utsolgt =="0" &&
-		              <TouchableOpacity onPress={()=>this.onLearnMore({ item })}>
+		              <TouchableOpacity onPress={()=>this._addToCart({ item })}>
 		                <Icon
 		                  name='cart-plus'
 		                  size={28}

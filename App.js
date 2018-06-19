@@ -80,7 +80,7 @@ export default TabNavigator(
         }
         else if (routeName == 'Handlekurv') {
         	iconName = `cart${focused ? '' : '-outline'}`;
-          return <Icon name={iconName} size={25} color={tintColor} onPress={() => navigation.navigate("Handlekurv", {date: new Date()})}/>;
+          return <Icon name={iconName} size={25} color={tintColor} onPress={() => navigation.navigate("Handlekurv", {dataUpdated: true})}/>;
         }
         else if (routeName == 'Drikke') {
           iconName = 'beer';
