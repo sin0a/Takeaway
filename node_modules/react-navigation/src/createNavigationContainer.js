@@ -1,5 +1,6 @@
 import React from 'react';
-import { BackHandler, Linking } from './PlatformHelpers';
+import { Linking } from 'react-native';
+import { BackHandler } from './PlatformHelpers';
 import NavigationActions from './NavigationActions';
 import addNavigationHelpers from './addNavigationHelpers';
 import invariant from './utils/invariant';
@@ -24,9 +25,24 @@ export default function createNavigationContainer(Component) {
 
       this._validateProps(props);
 
+      this._initialAction = NavigationActions.init();
+
+      if (this._isStateful()) {
+        this.subs = BackHandler.addEventListener('hardwareBackPress', () => {
+          if (!this._isMounted) {
+            this.subs && this.subs.remove();
+          } else {
+            // dispatch returns true if the action results in a state change,
+            // and false otherwise. This maps well to what BackHandler expects
+            // from a callback -- true if handled, false if not handled
+            return this.dispatch(NavigationActions.back());
+          }
+        });
+      }
+
       this.state = {
         nav: this._isStateful()
-          ? Component.router.getStateForAction(NavigationActions.init())
+          ? Component.router.getStateForAction(this._initialAction)
           : null,
       };
     }
@@ -123,28 +139,34 @@ export default function createNavigationContainer(Component) {
     }
 
     componentDidMount() {
+      this._isMounted = true;
       if (!this._isStateful()) {
         return;
       }
 
-      this.subs = BackHandler.addEventListener('hardwareBackPress', () =>
-        this.dispatch(NavigationActions.back())
-      );
-
       Linking.addEventListener('url', this._handleOpenURL);
 
       Linking.getInitialURL().then(url => url && this._handleOpenURL({ url }));
+
+      this._actionEventSubscribers.forEach(subscriber =>
+        subscriber({
+          type: 'action',
+          action: this._initialAction,
+          state: this.state.nav,
+          lastState: null,
+        })
+      );
     }
 
     componentWillUnmount() {
+      this._isMounted = false;
       Linking.removeEventListener('url', this._handleOpenURL);
       this.subs && this.subs.remove();
     }
 
     // Per-tick temporary storage for state.nav
 
-    dispatch = inputAction => {
-      const action = NavigationActions.mapDeprecatedActionAndWarn(inputAction);
+    dispatch = action => {
       if (!this._isStateful()) {
         return false;
       }
@@ -154,7 +176,6 @@ export default function createNavigationContainer(Component) {
       const nav = Component.router.getStateForAction(action, oldNav);
       const dispatchActionEvents = () => {
         this._actionEventSubscribers.forEach(subscriber =>
-          // $FlowFixMe - Payload should probably understand generic state type
           subscriber({
             type: 'action',
             action,

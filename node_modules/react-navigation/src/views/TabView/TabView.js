@@ -1,13 +1,15 @@
 import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { TabViewAnimated, TabViewPagerPan } from 'react-native-tab-view';
+import SafeAreaView from 'react-native-safe-area-view';
 
-import SceneView from '../SceneView';
+import ResourceSavingSceneView from '../ResourceSavingSceneView';
 import withCachedChildNavigation from '../../withCachedChildNavigation';
-import SafeAreaView from '../SafeAreaView';
 
 class TabView extends React.PureComponent {
   static defaultProps = {
+    lazy: true,
+    removedClippedSubviews: true,
     // fix for https://github.com/react-native-community/react-native-tab-view/issues/312
     initialLayout: Platform.select({
       android: { width: 1, height: 0 },
@@ -20,19 +22,27 @@ class TabView extends React.PureComponent {
   };
 
   _renderScene = ({ route }) => {
-    const { screenProps } = this.props;
+    const { screenProps, navigation } = this.props;
+    const focusedIndex = navigation.state.index;
+    const focusedKey = navigation.state.routes[focusedIndex].key;
+    const key = route.key;
     const childNavigation = this.props.childNavigationProps[route.key];
     const TabComponent = this.props.router.getComponentForRouteName(
       route.routeName
     );
+
     return (
-      <View style={styles.page}>
-        <SceneView
-          screenProps={screenProps}
-          component={TabComponent}
-          navigation={childNavigation}
-        />
-      </View>
+      <ResourceSavingSceneView
+        lazy={this.props.lazy}
+        isFocused={focusedKey === key}
+        removeClippedSubViews={this.props.removeClippedSubviews}
+        animationEnabled={this.props.animationEnabled}
+        swipeEnabled={this.props.swipeEnabled}
+        screenProps={screenProps}
+        component={TabComponent}
+        navigation={this.props.navigation}
+        childNavigation={childNavigation}
+      />
     );
   };
 
@@ -140,10 +150,14 @@ class TabView extends React.PureComponent {
     const tabBarVisible =
       options.tabBarVisible == null ? true : options.tabBarVisible;
 
-    const swipeEnabled =
+    let swipeEnabled =
       options.swipeEnabled == null
         ? this.props.swipeEnabled
         : options.swipeEnabled;
+
+    if (typeof swipeEnabled === 'function') {
+      swipeEnabled = swipeEnabled(state);
+    }
 
     if (tabBarComponent !== undefined && tabBarVisible) {
       if (tabBarPosition === 'bottom') {
@@ -184,10 +198,5 @@ export default withCachedChildNavigation(TabView);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-
-  page: {
-    flex: 1,
-    overflow: 'hidden',
   },
 });

@@ -6,6 +6,13 @@ import NavigationActions from '../NavigationActions';
 import validateRouteConfigMap from './validateRouteConfigMap';
 import getScreenConfigDeprecated from './getScreenConfigDeprecated';
 
+function childrenUpdateWithoutSwitchingIndex(actionType) {
+  return [
+    NavigationActions.SET_PARAMS,
+    NavigationActions.COMPLETE_TRANSITION,
+  ].includes(actionType);
+}
+
 export default (routeConfigs, config = {}) => {
   // Fail fast on invalid route definitions
   validateRouteConfigMap(routeConfigs);
@@ -23,8 +30,9 @@ export default (routeConfigs, config = {}) => {
     paths[routeName] =
       typeof routeConfig.path === 'string' ? routeConfig.path : routeName;
     tabRouters[routeName] = null;
-    if (routeConfig.screen && routeConfig.screen.router) {
-      tabRouters[routeName] = routeConfig.screen.router;
+    const screen = getScreenForRouteName(routeConfigs, routeName);
+    if (screen.router) {
+      tabRouters[routeName] = screen.router;
     }
   });
   if (initialRouteIndex === -1) {
@@ -213,9 +221,13 @@ export default (routeConfigs, config = {}) => {
       });
       // console.log(`${order.join('-')}: Processed other tabs:`, {lastIndex: state.index, index});
 
-      // keep active tab index if action type is SET_PARAMS
-      index =
-        action.type === NavigationActions.SET_PARAMS ? state.index : index;
+      // Nested routers can be updated after switching tabs with actions such as SET_PARAMS
+      // and COMPLETE_TRANSITION.
+      // NOTE: This may be problematic with custom routers because we whitelist the actions
+      // that can be handled by child routers without automatically changing index.
+      if (childrenUpdateWithoutSwitchingIndex(action.type)) {
+        index = state.index;
+      }
 
       if (index !== state.index || routes !== state.routes) {
         return {
@@ -228,7 +240,7 @@ export default (routeConfigs, config = {}) => {
     },
 
     getComponentForState(state) {
-      const routeName = order[state.index];
+      const routeName = state.routes[state.index].routeName;
       invariant(
         routeName,
         `There is no route defined for index ${state.index}. Check that

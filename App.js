@@ -21,11 +21,11 @@ class Deals extends React.Component {
     this.state = { refresh: false, };
     global.BASE_URL     = 'http://192.168.10.128';
     global.ITEM_API     = 'http://192.168.10.128/item_api.php';
-    global.IMAGE_DRIKKE = require('C:/Users/Sindre/Takeaway/app/pictures/soda-bottle.png');
+    global.IMAGE_DRIKKE = require('./app/pictures/soda-bottle.png');
     global.IMAGE_BURGER = require('./app/pictures/burgertirsdag.png');
     global.ERR_BASIC    = 'Det skjedde en feil, vennligst prøv igjen senere';
-    global.FONT_MM      = require('C:/Users/Sindre/Takeaway/resources/fonts/Montserrat-Medium.ttf');
-    global.FONT_MR      = require('C:/Users/Sindre/Takeaway/resources/fonts/Montserrat-Regular.ttf');
+    global.FONT_MM      = require('./resources/fonts/Montserrat-Medium.ttf');
+    global.FONT_MR      = require('./resources/fonts/Montserrat-Regular.ttf');
   }
   async componentDidMount(){
     // load custom fonts
