@@ -2,11 +2,7 @@
 ** This is s work under progress, proper design and animations have not been implemented yet. 
 This is a showcase of core functionality ** 
 
-![alt text](https://github.com/sin0a/Takeaway/tree/master/images/frontpage.jpg "Front page")
-![alt text](https://github.com/sin0a/Takeaway/tree/master/images/pizza.jpg "Front page")
-![alt text](https://github.com/sin0a/Takeaway/tree/master/images/soda.jpg "Front page")
-![alt text](https://github.com/sin0a/Takeaway/tree/master/images/cart.jpg "Front page")
-![alt text](https://github.com/sin0a/Takeaway/tree/master/images/orders.jpg "Front page")
+![alt text](https://github.com/sin0a/Takeaway/tree/master/images/frontpage.jpg)
 
 ## Current version
 
