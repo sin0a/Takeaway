@@ -2,7 +2,7 @@
 ** This is s work under progress, proper design and animations have not been implemented yet. 
 This is a showcase of core functionality ** 
 
-![alt text](https://github.com/sin0a/Takeaway/tree/master/images/frontpage.jpg)
+<img src="https://github.com/sin0a/Takeaway/tree/master/images/frontpage.jpg" alt="Front page">
 
 ## Current version
 
