@@ -1,7 +1,8 @@
 {
   "expo": {
     "sdkVersion": "25.0.0",
-    "icon": "./resources/icon/fjoset.png"
+    "icon": "./resources/icon/fjoset.png",
+    "orientation": "portrait"
   ,
   "android": {
      "package": "com.sindre.Testproject"

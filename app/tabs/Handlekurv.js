@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import { AppRegistry, AsyncStorage, RefreshControl, TouchableOpacity, ActivityIndicator, Image,FlatList, StyleSheet, Text, View } from 'react-native';
+import { AppRegistry, Alert, AsyncStorage, RefreshControl, TouchableOpacity, ActivityIndicator, Image,FlatList, StyleSheet, Text, View } from 'react-native';
 import { List, ListItem, Button } from 'react-native-elements';
 import { TabNavigator, TabBarBottom } from 'react-navigation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import styles from '../style/Styles.js';
 import { Expo, Font } from 'expo';
+import Toast, {DURATION} from 'react-native-easy-toast';
 
 export default class Handlekurv extends React.Component {
 
@@ -17,7 +18,11 @@ export default class Handlekurv extends React.Component {
 		this.state ={
 			data: [],
 			cart: [],
+			orders: [],
+			history: [],
+			details: [],
 			total: 0,
+			oNr: 0,
 			handlekurv: true,
 			selected: false,
 			dataUpdated: false,
@@ -60,6 +65,7 @@ export default class Handlekurv extends React.Component {
 		let keys = await AsyncStorage.getAllKeys();
 		let { total } = this.state;
 		let { cart } = this.state;
+		let { orders } = this.state;
 		let { dataUpdated } = this.state;
 		let string;
 		let json;
@@ -67,15 +73,24 @@ export default class Handlekurv extends React.Component {
 		try {
 			for(let key of keys){
 				string = await AsyncStorage.getItem(key);
-				json = JSON.parse(string);
-				cart.push(json);
+				if(parseInt(key) >= 50){
+					json = JSON.parse(string);
+					orders.push(json);
+				} else{
+					json = JSON.parse(string);
+					cart.push(json);
+				}
 			}
 			var merged = [].concat.apply([], cart);
+			var mergedOrders = [].concat.apply([], orders);
 		}catch(error) {
 			console.error(error);
 		}finally{
 				this.setState({ cart: merged });
+				this.setState({ orders: mergedOrders});
 				this.regnTotal();
+				if(orders != null){
+				}
 		}
 	}
 	// Oppdater dataTabell, re-rendrer View
@@ -83,6 +98,7 @@ export default class Handlekurv extends React.Component {
 		let {cart} = this.state;
 		this.setState({ cart: []});
 		this.getKurv();
+		this.getOrders();
 	}
 	// Sletter en vare fra handlekurven
 	 removeFromCart({item, index}){
@@ -94,13 +110,13 @@ export default class Handlekurv extends React.Component {
 		this.regnTotal();
 		this.setState({dataUpdated: !dataUpdated});
 	}
-	// Regn ut totalpris
+	// Regn ut totalprice
 	regnTotal(){
 		let { dataUpdated } = this.state;
 		let { cart } = this.state;
 		total = 0;
 		for(let i=0; i < cart.length; ++i){
-			total = total + Number.parseInt(cart[i].pris);
+			total = total + Number.parseInt(cart[i].price);
 		}
 		this.setState({ total });
 		this.setState({ dataUpdated: !dataUpdated });
@@ -109,12 +125,12 @@ export default class Handlekurv extends React.Component {
 	// Button antall +: Øker antall av en vare
 	antallPlus({item, index}){
 		let num = Number.parseInt(item.antall);
-		let pris = Number.parseInt(item.pris);
+		let price = Number.parseInt(item.price);
 		let { cart } = this.state;
 		let { dataUpdated } = this.state;
 		num = num + 1;
 		item.antall = num;
-		item.pris = pris + pris/(num-1);
+		item.price = price + price/(num-1);
 		cart[index] = item;
 		this.setState({ cart });
 		this.setState({dataUpdated: !dataUpdated});
@@ -123,13 +139,13 @@ export default class Handlekurv extends React.Component {
 	// Button antall -: senker antall av en vare
 	antallMinus({item, index}){
 		let num = Number.parseInt(item.antall);
-		let pris = Number.parseInt(item.pris);
+		let price = Number.parseInt(item.price);
 		let { cart } = this.state;
 		let { dataUpdated } = this.state;
 		if(num > 1){
 			num = num - 1;
 			item.antall = num;
-			item.pris = pris - pris/(num+1);
+			item.price = price - price/(num+1);
 			cart[index] = item;
 			this.setState({ cart });
 			this.regnTotal();
@@ -139,17 +155,118 @@ export default class Handlekurv extends React.Component {
 	loadVarer(){
 		//let { cart } = this.state;
 		const { item } = this.props.navigation.state.params;
-		console.log(item.navn);
+		console.log(item.name);
 		/*var data =[{id: item.id, size: item.size,
-			navn: item.navn, type: 'pizza', antall: '1', bilde: item.bilde,
-			pris: item.pris, key: key}];
+			name: item.name, type: 'pizza', antall: '1', pic: item.pic,
+			price: item.price, key: key}];
 			cart.push(cart);
 			var merged = [].concat.apply([], cart);
 			this.setState({ cart: merged });*/
 	}
+	async saveOrder(data){
+		let count = 50;
+		key = JSON.stringify(count);
+    try {
+       let value = "value";
+       while (value != null){
+          count = count + 1;
+					key = JSON.stringify(count);
+					value = await AsyncStorage.getItem(key);
+       }
+			 AsyncStorage.setItem(key, data);
+    } catch (error) {
+      // Error retrieving data
+    }
+}
+	async order(){
+		let { cart}  = this.state;
+		let onr = 0;
+		try{
+			var form = new FormData()
+			form.append('unr', '1');
+			form.append('order_status', 'aktiv');
+			form.append('table', 'orders');
+			await fetch(global.ORDER_API, {
+				method: 'POST',
+				body: form
+			}).then(r => r.json())
+			.then(data => {
+				onr = data;
+			});
+		} catch(error){
+			console.log(error);
+		}finally{
+		 try{
+			for (var item of cart){
+				var formData = new FormData()
+				formData.append('pnr',item.pNr);
+				formData.append('table', 'else');
+				formData.append('onr', onr);
+				formData.append('quantity', item.antall);
+				await fetch(global.ORDER_API, {
+				  method: 'POST',
+				  body: formData
+				});
+			}
+		} catch(error){
+			console.log(error);
+		}finally{
+			this.refs.toast.show('Din bestilling er registrert');
+			await AsyncStorage.clear();
+			this.refresh();
+		}
+	}
+}
+async getDetails({item}){
+	var details = [];
+	try{
+		var form = new Formdata()
+		form.append('table', 'get_details');
+		form.append('onr', item.oNr);
+	  await fetch(global.ORDER_API, {
+	  method: 'POST',
+	  body: form
+	  }).then((response) => response.json())
+	  .then((responseJson) => {
+	    for (i=0; i < responseJson.length; ++i) {
+	      details.push(responseJson[i]);
+	    }});
+	  this.setState({
+	    details: details });
+	}catch(error){
+	    console.log(error);
+	}finally{
+		return <Text>Test</Text>
+		this.setState({ dataUpdated: true});
+	}
+}
+async getOrders(){
+	var form = new FormData()
+	var array = [];
+	form.append('unr', '1');
+	form.append('table', 'get_orders');
+	try{
+	  await fetch(global.ORDER_API, {
+	  method: 'POST',
+	  body: form
+	  }).then((response) => response.json())
+	  .then((responseJson) => {
+	    for (i=0; i < responseJson.length; ++i) {
+				responseJson[i].order_time = responseJson[i].order_time.slice(0,-3);
+	      array.push(responseJson[i]);
+	    }});
+	  this.setState({
+	    history: array
+	  });
+	}catch(error){
+	    console.log(error);
+	}finally{
+	}
+}
 	async componentDidMount(){
 		// fetch data from db
 		this.getKurv();
+		this.getOrders();
 		//console.log(this.props.navigation.sta);
 		//this.loadVarer();
 		// Load fonts
@@ -174,6 +291,11 @@ export default class Handlekurv extends React.Component {
 		if(this.state.handlekurv){
 			return(
 				<View style={styles.container}>
+					<Toast
+		        ref="toast"
+		        style={{backgroundColor:'white'}}
+		        textStyle={{color:'black'}}
+		      />
 					<View style={styles.tabs}>
 						<View style={{ width:'50%'}}>
 							<Button
@@ -181,8 +303,8 @@ export default class Handlekurv extends React.Component {
 								onPress={() => this.setState({ handlekurv: true})}
 								titleStyle={{fontFamily: 'Montserrat-Medium', fontWeight: '400', color:'black'}}
 								buttonStyle={{
-									height: 30,
-									backgroundColor: 'white',
+									height: 50,
+									backgroundColor: 'gray',
 								}}/>
 							</View>
 							<View style={{ width:'50%'}}>
@@ -191,7 +313,7 @@ export default class Handlekurv extends React.Component {
 									onPress={() => this.setState({ handlekurv: false})}
 		              titleStyle={{color:'black', fontFamily: 'Montserrat-Medium', fontWeight: '400'}}
 		              buttonStyle={{
-		                height: 30,
+		                height: 50,
 										backgroundColor: 'white',
 		              }}/>
 		        </View>
@@ -209,13 +331,13 @@ export default class Handlekurv extends React.Component {
 								<View style={styles.imageWrapperCart}>
 									<Image
 										style={{ width: 70, height: 70 }}
-										source={{uri: item.bilde}}
+										source={{uri: item.pic}}
 									/>
 								</View>
 								<View style={{ width: '33%', paddingTop: '4%'}}>
-									<Text style={styles.titleCart}>{item.navn}</Text>
+									<Text style={styles.titleCart}>{item.name}</Text>
 								<View>
-									<Text style={styles.subtitle}>
+									<Text style={styles.description}>
 										{item.size}
 									</Text>
 								</View>
@@ -238,8 +360,8 @@ export default class Handlekurv extends React.Component {
 								</TouchableOpacity>
 	          	</View>
 							<View style={{flexDirection: 'row', margin: 4, alignItems: 'flex-end', width: '18%', paddingBottom: '5%'}}>
-								<Text style={styles.prisCart}>
-									{item.pris},-
+								<Text style={styles.priceCart}>
+									{item.price},-
 								</Text>
 							</View>
 							<View style={{alignItems: 'flex-end', paddingBottom: '5%', flexDirection: 'row', margin: 4, width: '8%'}}>
@@ -261,7 +383,8 @@ export default class Handlekurv extends React.Component {
 						<View style={{marginTop: 10, marginBottom: 6, paddingLeft: '5%', paddingRight: '5%'}}>
 	            <Button style={{fontFamily: 'Montserrat-Regular', fontWeight: '400', flex: 1}}
 	              border='1'
-								title='Betal'
+								title='Bestill'
+								onPress={() => this.order({})}
 	              color='white'
 	              buttonStyle={{
 	                backgroundColor: '#7f1a1a',
@@ -292,7 +415,7 @@ export default class Handlekurv extends React.Component {
 		              titleStyle={{color:'black', fontFamily: 'Montserrat-Medium', fontWeight: '400'}}
 		              buttonStyle={{
 		                height: 50,
-										backgroundColor: 'white',
+										backgroundColor: 'gray',
 		              }}/>
 		        </View>
 					</View>
@@ -302,11 +425,18 @@ export default class Handlekurv extends React.Component {
 								refreshing={this.state.isLoading}
 								onRefresh={this.checkForUpdate.bind(this)}/>
 						}
-						data={this.state.cart}
-						extradata={this.state.dataUpdated}
+						data={this.state.history}
+						extradata={this.state}
 						renderItem={({item, index}) =>
 							<View style={styles.listItem}>
+								<View style={{ marginTop: 10, width: '46%' }}>
+								<Text style={styles.description}>ONr: {item.oNr}</Text>
 							</View>
+							<View style={{marginTop: 10, marginBottom: 6, width: '70%'}}>
+								<Text style={styles.description}>{item.order_date} {item.order_time} </Text>
+								<Text style={styles.description}>{item.order_status}</Text>
+							</View>
+						</View>
 						}
 						keyExtractor={(item, index) => index}
 					/>

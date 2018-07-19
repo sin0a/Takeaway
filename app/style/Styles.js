@@ -60,7 +60,7 @@ export default React.StyleSheet.create({
     margin: 2,
     paddingBottom: 3,
   },
-  subtitle: {
+  description: {
     fontSize: 10,
     fontFamily: 'Montserrat-Regular',
     textAlign: 'left',
@@ -68,7 +68,7 @@ export default React.StyleSheet.create({
     paddingBottom: 3,
     paddingLeft: 3,
   },
-  utsolgt: {
+  inStock: {
     fontSize: 12,
     fontFamily: 'Montserrat-Regular',
     textAlign: 'left',
@@ -76,12 +76,12 @@ export default React.StyleSheet.create({
     margin: 2,
     paddingBottom: 3,
   },
-  pris:{
+  price:{
     fontSize: 15,
     textAlign: 'right',
     paddingRight: 15,
   },
-	prisCart:{
+	priceCart:{
     fontSize: 15,
 		paddingBottom: '10%',
     textAlign: 'right',

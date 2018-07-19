@@ -40,15 +40,15 @@ export default class Pizza extends React.Component {
     let targetPost = dataSource[index];
     let replacement = ekstradata[index];
     // endre informasjon
-    var pris =  targetPost.pris;
+    var price =  targetPost.price;
     var size = targetPost.size;
-    var id = targetPost.id;
-    targetPost.pris = replacement.pris;
+    var pNr = targetPost.pNr;
+    targetPost.price = replacement.price;
     targetPost.size = replacement.size;
-    targetPost.id = replacement.id;
-    replacement.pris = pris;
+    targetPost.pNr = replacement.pNr;
+    replacement.price = price;
     replacement.size = size;
-    replacement.id = id;
+    replacement.pNr = pNr;
     // Then update targetPost in 'posts'
     dataSource[index] = targetPost;
     // Then reset the 'state.posts' property
@@ -68,16 +68,16 @@ export default class Pizza extends React.Component {
     count = count + 1;
     key = JSON.stringify(count);
     // Data som skal sendes
-    var data =[{id: item.id, size: item.size,
-      navn: item.navn, type: 'pizza', antall: '1', bilde: item.bilde,
-      pris: item.pris, key: key}];
+    var data =[{pNr: item.pNr, size: item.size,
+      name: item.name, type: 'pizza', antall: '1', pic: item.pic,
+      price: item.price, key: key}];
     data = JSON.stringify(data);
     try {
       await AsyncStorage.setItem(key, data);
     } catch (error) {
       this.serState({hasErrored: true});
     } finally {
-      this.refs.toast.show(item.navn+' til i handlekurv');
+      this.refs.toast.show(item.name+' til i handlekurv');
     }
     this.setState({count});
   }
@@ -89,13 +89,18 @@ export default class Pizza extends React.Component {
 	  });
     // fetch data from DB
     var array = [];
-    var utsolgt = [];
+    var inStock = [];
     this.setState({ fontLoaded: true });
-    return fetch(global.BASE_URL + '/pizza_api.php')
+    var form = new FormData()
+    form.append('category', '1');
+    fetch(global.ITEM_API, {
+      method: 'POST',
+      body: form
+    })
       .then((response) => response.json())
       .then((responseJson) => {
         for (i=0; i < responseJson.length; ++i) {
-          if (responseJson[i]["id"] % 2 != 0) {
+          if (responseJson[i]["pNr"] % 2 != 0) {
             array.push(responseJson[i]);
             responseJson.splice(i, 1);
           }
@@ -104,7 +109,7 @@ export default class Pizza extends React.Component {
     this.setState({
       isLoading: false,
       dataSource: responseJson,
-      utsolgt: utsolgt,
+      inStock: inStock,
       ekstradata: array,
         }, function(){
         });
@@ -143,18 +148,18 @@ export default class Pizza extends React.Component {
             <View style={styles.imageWrapper}>
               <Image
                 style={{ width: 80, height: 80 }}
-                source={{uri: item.bilde}}
+                source={{uri: item.pic}}
                 />
             </View>
           <View style={{ width: '46%' }}>
-            {item.utsolgt =="1" && <Text> <Text style={styles.title}>{item.navn}</Text><Text style={{fontSize: 12,
+            {item.inStock =="1" && <Text> <Text style={styles.title}>{item.name}</Text><Text style={{fontSize: 12,
             fontFamily: 'Montserrat-Regular',
             textAlign: 'left',
-            color: 'red'}}>(Utsolgt)</Text> </Text>}
-            {item.utsolgt =="0" && <Text> <Text style={styles.title}>{item.navn}</Text> </Text>}
+            color: 'red'}}>(utsolgt)</Text> </Text>}
+            {item.inStock =="0" && <Text> <Text style={styles.title}>{item.name}</Text> </Text>}
           <View>
-              <Text style={styles.subtitle}>
-                {item.topping}
+              <Text style={styles.description}>
+                {item.description}
               </Text>
           </View>
           <View style={{marginTop: 10, marginBottom: 6, width: '70%'}}>
@@ -172,17 +177,17 @@ export default class Pizza extends React.Component {
           </View>
           </View>
           <View style={{flexDirection: 'row', width: '24%', alignItems: 'flex-end'}}>
-          <Text style={styles.pris}>
-            {item.pris}kr
+          <Text style={styles.price}>
+            {item.price}kr
             </Text>
-            {item.utsolgt =="1" &&
+            {item.inStock =="1" &&
               <Icon
                 name='cart-plus'
                 size={28}
                 color='gray'
                 style={{height:25,width:25,borderRadius:15}}/>
             }
-            {item.utsolgt =="0" &&
+            {item.inStock =="0" &&
               <TouchableOpacity onPress={()=>this._addToCart({ item })}>
                 <Icon
                   name='cart-plus'

@@ -19,8 +19,9 @@ class Deals extends React.Component {
   constructor(){
     super();
     this.state = { refresh: false, };
-    global.BASE_URL     = 'http://192.168.10.128';
-    global.ITEM_API     = 'http://192.168.10.128/item_api.php';
+    global.BASE_URL     = 'http://ec2-18-130-12-237.eu-west-2.compute.amazonaws.com';
+    global.ITEM_API     = 'http://ec2-18-130-12-237.eu-west-2.compute.amazonaws.com/item_api.php';
+    global.ORDER_API    = 'http://ec2-18-130-12-237.eu-west-2.compute.amazonaws.com/order_api.php'
     global.IMAGE_DRIKKE = require('./app/pictures/soda-bottle.png');
     global.IMAGE_BURGER = require('./app/pictures/burgertirsdag.png');
     global.ERR_BASIC    = 'Det skjedde en feil, vennligst prøv igjen senere';

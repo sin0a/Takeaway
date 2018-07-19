@@ -36,16 +36,16 @@ export default class Drikke extends React.Component {
 		count = count + 1;
 		key = JSON.stringify(count);
 		// Data som skal sendes
-		var data =[{id: item.id, size: item.size,
-			navn: item.navn, type: 'pizza', antall: '1', bilde: item.bilde,
-			pris: item.pris, key: key}];
+		var data =[{pNr: item.pNr, size: item.size,
+			name: item.name, type: 'pizza', antall: '1', pic: item.pic,
+			price: item.price, key: key}];
 		data = JSON.stringify(data);
 		try {
 			await AsyncStorage.setItem(key, data);
 		} catch (error) {
 			this.setState({ hasErrored: true});
 		} finally {
-      this.refs.toast.show(item.navn+' til i handlekurv');
+      this.refs.toast.show(item.name+' til i handlekurv');
     }
 		this.setState({count});
 	}
@@ -55,7 +55,12 @@ export default class Drikke extends React.Component {
 			'Montserrat-Regular': global.FONT_MR,
 			'Montserrat-Medium':  global.FONT_MM,
 		});
-			fetchData(global.ITEM_API,'drikke')
+			var form = new FormData()
+			form.append('category', '3');
+			fetch(global.ITEM_API, {
+				method: 'POST',
+				body: form
+			})
 			.then((response) => response.json())
 			.then((data) => this.setState({ data }))
 			.catch(() => this.setState({ hasErrored: true }));
@@ -89,29 +94,29 @@ export default class Drikke extends React.Component {
 							<View style={styles.imageWrapper}>
 								<Image
 									style={{ width: 80, height: 80}}
-									source={{ uri: item.bilde}}
+									source={{ uri: item.pic}}
 								/>
 							</View>
 							<View style={{ flex: 1, width: '46%'}}>
 								<Text style={styles.titleSnacks}>
-									{item.navn}
+									{item.name}
 								</Text>
-								<Text style={styles.subtitle}>
-									{item.innhold}
+								<Text style={styles.description}>
+									{item.size}
 								</Text>
 							</View>
 							<View style={{flexDirection: 'row', width: '24%', alignItems: 'flex-end'}}>
-		          <Text style={styles.pris}>
-		            {item.pris}kr
+		          <Text style={styles.price}>
+		            {item.price}kr
 		            </Text>
-		            {item.utsolgt =="1" &&
+		            {item.inStock =="1" &&
 		              <Icon
 		                name='cart-plus'
 		                size={28}
 		                color='gray'
 		                style={{height:25,width:25,borderRadius:15}}/>
 		            }
-		            {item.utsolgt =="0" &&
+		            {item.inStock =="0" &&
 		              <TouchableOpacity onPress={()=>this._addToCart({ item })}>
 		                <Icon
 		                  name='cart-plus'
