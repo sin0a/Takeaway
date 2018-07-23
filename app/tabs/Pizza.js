@@ -77,7 +77,7 @@ export default class Pizza extends React.Component {
     } catch (error) {
       this.serState({hasErrored: true});
     } finally {
-      this.refs.toast.show(item.name+' til i handlekurv');
+      this.refs.toast.show(item.name+' lagt til i handlekurv');
     }
     this.setState({count});
   }
@@ -137,8 +137,8 @@ export default class Pizza extends React.Component {
       <View style={styles.container}>
       <Toast
         ref="toast"
-        style={{backgroundColor:'white'}}
-        textStyle={{color:'black'}}
+        style={{backgroundColor:'#7f1a1a'}}
+        textStyle={{color:'white'}}
       />
         <FlatList
           data={this.state.dataSource}

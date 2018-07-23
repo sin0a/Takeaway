@@ -5,10 +5,10 @@
     "orientation": "portrait"
   ,
   "android": {
-     "package": "com.sindre.Testproject"
+     "package": "com.sindre.Pizzafjoset"
    	},
    	"ios": {
-      "bundleIdentifier": "com.sindre.Testproject"
+      "bundleIdentifier": "com.sindre.Pizzafjoset"
     }
   }
 }
