@@ -24,30 +24,43 @@ export default class Snacks extends React.Component {
 	}
 // TODO: Sjekk om alle metoder kan bli lagret i egen klasse
 // Viktig
-	async _addToCart({ item }) {
-		let { count} = this.state;
-		// Henter alt som er i handlevognen
-		let keys = await AsyncStorage.getAllKeys();
-		// Teller antall rader
-		for (let key of keys){
-			count = count + 1;
-		}
-		count = count + 1;
-		key = JSON.stringify(count);
-		// Data som skal sendes
-		var data =[{pNr: item.pNr, description: item.description,
-			name: item.name, type: 'snacks', antall: '1', pic: item.pic,
-			price: item.price, key: key}];
-		data = JSON.stringify(data);
-		try {
-			await AsyncStorage.setItem(key, data);
-		} catch (error) {
-			this.setState({ hasErrored: true });
-		} finally {
+async _addToCart({ item }) {
+	this.setState({isFetching:true});
+	let { count} = this.state;
+	var key = JSON.stringify(item.pNr);
+	let result = [];
+	var storage = await AsyncStorage.getItem(key);
+	if(storage != null){
+		console.log(storage);
+			json = JSON.parse(storage);
+			result.push(json);
+			var merged = [].concat.apply([], result);
+			num = Number.parseInt(merged[0].antall);
+			num = num + 1;
+			merged[0].antall = num;
+		try{
+				await AsyncStorage.removeItem(key);
+				await AsyncStorage.setItem(key, JSON.stringify(merged));
+		} catch(error){
+			this.setState({hasErrored: true});
+		} finally{
 			this.refs.toast.show(item.name+' lagt til i handlekurv');
 		}
-		this.setState({count});
+
+	} else {
+		try{
+			var data =[{pNr: item.pNr, size: item.size,
+				name: item.name, type: 'snacks', antall: '1', pic: item.pic,
+				price: item.price, key: key}];
+			data = JSON.stringify(data);
+			AsyncStorage.setItem(key, data);
+		} catch(error){
+			this.setState({hasErrored: true});
+		} finally{
+			this.refs.toast.show(item.name+' lagt til i handlekurv');
+		}
 	}
+}
 	async componentDidMount() {
 		// Load fonts
 		await Font.loadAsync({

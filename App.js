@@ -24,6 +24,7 @@ class Deals extends React.Component {
     global.ORDER_API    = 'http://ec2-18-130-12-237.eu-west-2.compute.amazonaws.com/order_api.php'
     global.IMAGE_DRIKKE = require('./app/pictures/soda-bottle.png');
     global.IMAGE_BURGER = require('./app/pictures/burgertirsdag.png');
+    global.IMAGE_LOGIN  = require('./app/pictures/login.png');
     global.ERR_BASIC    = 'Det skjedde en feil, vennligst prøv igjen senere';
     global.FONT_MM      = require('./resources/fonts/Montserrat-Medium.ttf');
     global.FONT_MR      = require('./resources/fonts/Montserrat-Regular.ttf');

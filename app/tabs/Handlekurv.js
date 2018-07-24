@@ -21,6 +21,7 @@ export default class Handlekurv extends React.Component {
 			orders: [],
 			history: [],
 			details: [],
+			compare: [],
 			total: 0,
 			oNr: 0,
 			handlekurv: true,
@@ -36,6 +37,7 @@ export default class Handlekurv extends React.Component {
 	async checkForUpdate(){
 		let keys = await AsyncStorage.getAllKeys();
 		let { cart } = this.state;
+		let { compare } = this.state;
 		var count = 0;
 		for(let key of keys){
 			count = count + 1;
@@ -116,7 +118,9 @@ export default class Handlekurv extends React.Component {
 		let { cart } = this.state;
 		total = 0;
 		for(let i=0; i < cart.length; ++i){
-			total = total + Number.parseInt(cart[i].price);
+			antall = Number.parseInt(cart[i].antall);
+			item = Number.parseInt(cart[i].price);
+			total = total + (antall * item);
 		}
 		this.setState({ total });
 		this.setState({ dataUpdated: !dataUpdated });
@@ -130,9 +134,7 @@ export default class Handlekurv extends React.Component {
 		let { dataUpdated } = this.state;
 		num = num + 1;
 		item.antall = num;
-		item.price = price + price/(num-1);
-		cart[index] = item;
-		this.setState({ cart });
+		this.setState({ cart: cart });
 		this.setState({dataUpdated: !dataUpdated});
 		this.regnTotal();
 	}
@@ -145,8 +147,6 @@ export default class Handlekurv extends React.Component {
 		if(num > 1){
 			num = num - 1;
 			item.antall = num;
-			item.price = price - price/(num+1);
-			cart[index] = item;
 			this.setState({ cart });
 			this.regnTotal();
 			this.setState({dataUpdated: !dataUpdated});
@@ -212,7 +212,9 @@ export default class Handlekurv extends React.Component {
 			console.log(error);
 		}finally{
 			this.refs.toast.show('Din bestilling er registrert');
-			await AsyncStorage.clear();
+			for (var item of cart){
+				await AsyncStorage.removeItem(JSON.stringify(item.pNr));
+			}
 			this.refresh();
 		}
 	}
@@ -293,18 +295,18 @@ async getOrders(){
 				<View style={styles.container}>
 					<Toast
 		        ref="toast"
-		        style={{backgroundColor:'white'}}
-		        textStyle={{color:'black'}}
+		        style={{backgroundColor:'#7f1a1a'}}
+		        textStyle={{color:'white'}}
 		      />
 					<View style={styles.tabs}>
 						<View style={{ width:'50%'}}>
 							<Button
 								title='Handlekurv'
 								onPress={() => this.setState({ handlekurv: true})}
-								titleStyle={{fontFamily: 'Montserrat-Medium', fontWeight: '400', color:'black'}}
+								titleStyle={{fontFamily: 'Montserrat-Medium', fontWeight: '400', color:'white'}}
 								buttonStyle={{
 									height: 50,
-									backgroundColor: 'gray',
+									backgroundColor: '#7f1a1a',
 								}}/>
 							</View>
 							<View style={{ width:'50%'}}>
@@ -322,10 +324,10 @@ async getOrders(){
 						refreshControl={
 							<RefreshControl
 								refreshing={this.state.isLoading}
-								onRefresh={this.checkForUpdate.bind(this)}/>
+								onRefresh={this.refresh.bind(this)}/>
 						}
 						data={this.state.cart}
-						extradata={this.state.dataUpdated}
+						extradata={this.state}
 						renderItem={({item, index}) =>
 							<View style={styles.listItem}>
 								<View style={styles.imageWrapperCart}>
@@ -361,7 +363,7 @@ async getOrders(){
 	          	</View>
 							<View style={{flexDirection: 'row', margin: 4, alignItems: 'flex-end', width: '18%', paddingBottom: '5%'}}>
 								<Text style={styles.priceCart}>
-									{item.price},-
+									{Number.parseInt(item.price) * Number.parseInt(item.antall)},-
 								</Text>
 							</View>
 							<View style={{alignItems: 'flex-end', paddingBottom: '5%', flexDirection: 'row', margin: 4, width: '8%'}}>
@@ -412,10 +414,10 @@ async getOrders(){
 		            <Button style={{flex: 1}}
 									title='Mine ordre'
 									onPress={() => this.setState({ handlekurv: false})}
-		              titleStyle={{color:'black', fontFamily: 'Montserrat-Medium', fontWeight: '400'}}
+		              titleStyle={{color:'white', fontFamily: 'Montserrat-Medium', fontWeight: '400'}}
 		              buttonStyle={{
 		                height: 50,
-										backgroundColor: 'gray',
+										backgroundColor: '#7f1a1a',
 		              }}/>
 		        </View>
 					</View>
