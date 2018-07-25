@@ -5,7 +5,7 @@
 
 ## Current version
 ### Android:
-You can download the APK [here](http://ec2-18-130-12-237.eu-west-2.compute.amazonaws.com/pizza.apk)
+You can download the APK [here](http://ec2-18-130-12-237.eu-west-2.compute.amazonaws.com/pizzafjoset_alpha.apk)
 
 
 ### IOS:
